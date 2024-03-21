@@ -1,0 +1,17 @@
+{
+  "name": "projeto_arbitragem_10exchanges",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node -r dotenv/config index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5"
+  }
+}
