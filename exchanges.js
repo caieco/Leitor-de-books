@@ -4,7 +4,9 @@ const axios = require("axios");
 const binanceUrl = "https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=1"
 const bybitUrl = "https://api.bybit.com/v5/market/orderbook?category=spot&symbol=BTCUSDT&limit=1"
 const geminiUrl = "https://api.gemini.com/v2/ticker/btcusd"
-const bitgetUrl = "https://api.bitget.com/api/v2/common/trade-rate?symbol=BTCUSDT&businessType=spot"
+const hitbtcUrl = "https://api.hitbtc.com/api/3/public/orderbook"
+const huobiUrl = "https://api.huobi.pro/market/depth?symbol=btcusdt&depth=5&type=step0"
+const bitstampUrl = "https://www.bitstamp.net/api/v2/order_book/btcusdt/"
 
 async function orderbook_binance() {
     try {
@@ -38,11 +40,37 @@ async function orderbook_gemini() {
     }
 }
 
-async function orderbook_bitget() {
+async function orderbook_hitbtc() {
     try {
-    const result = await axios.get(bitgetUrl)
-    const obj = result.data
-    return obj.bid
+    const data = {
+        depth:1,
+        symbols:'BTCUSDT'
+    }
+    const result = await axios.get(hitbtcUrl, {
+        params: data
+    })
+    const obj = result
+    return obj.data.BTCUSDT.bid[0][0]
+    } catch(err) {
+        console.error(err)
+    }
+}
+
+async function orderbook_huobi() {
+    try {
+    const result = await axios.get(huobiUrl)
+    const obj = result.data.tick.bids[0][0]
+    return obj
+    } catch(err) {
+        console.error(err)
+    }
+}
+
+async function orderbook_bitstamp() {
+    try {
+    const result = await axios.get(bitstampUrl)
+    const obj = result.data.bids[0][0]
+    return obj
     } catch(err) {
         console.error(err)
     }
@@ -50,5 +78,6 @@ async function orderbook_bitget() {
 
 
 module.exports = {
-    orderbook_binance, orderbook_bybit, orderbook_gemini, orderbook_bitget
+    orderbook_binance, orderbook_bybit, orderbook_gemini, orderbook_hitbtc, orderbook_huobi,
+    orderbook_bitstamp
 }
