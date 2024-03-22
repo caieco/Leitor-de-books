@@ -2,44 +2,68 @@
 const exchanges = require("./exchanges");
 
 async function rodando() {
-    const preçoBinance = await exchanges.orderbook_binance()
-    const preçoBybit = await exchanges.orderbook_bybit();
-    const preçoGemini = await exchanges.orderbook_gemini();
-    const preçoHitBtc = await exchanges.orderbook_hitbtc();
-    const preçoHuobi = await exchanges.orderbook_huobi();
-    const preçoBitstamp = await exchanges.orderbook_bitstamp();
+    // Obter os preços de todas as corretoras
+    const [preçoBinance, preçoBybit, preçoGemini, preçoHitBtc, preçoHuobi, preçoBitstamp, preçoBitmex, preçoBitfinex] = await Promise.all([
+        exchanges.orderbook_binance(),
+        exchanges.orderbook_bybit(),
+        exchanges.orderbook_gemini(),
+        exchanges.orderbook_hitbtc(),
+        exchanges.orderbook_huobi(),
+        
+        exchanges.orderbook_bitstamp(),
+        exchanges.orderbook_bitmex(),
+        exchanges.orderbook_bitfinex()
+    ]);
 
-    
-    // Construindo a mensagem para a Binance
-    let msgBinance = "BINANCE".padEnd(10);
-    msgBinance += `BTCUSDT | PRICE: U$ ${parseFloat(preçoBinance).toFixed(2)} | Diff. U$  AquiVaiSpread\n`;
+    // Calcular o preço mais alto e o mais baixo
+    const menorPreco = Math.min(preçoBinance, preçoBybit, preçoGemini, preçoHitBtc, preçoHuobi, preçoBitstamp, preçoBitmex, preçoBitfinex);
+    const maiorPreco = Math.max(preçoBinance, preçoBybit, preçoGemini, preçoHitBtc, preçoHuobi, preçoBitstamp, preçoBitmex, preçoBitfinex);
 
-    // Construindo a mensagem para a Bybit  
-    let msgBybit = "BYBIT".padEnd(10);
-    msgBybit += `BTCUSDT | PRICE: U$ ${parseFloat(preçoBybit).toFixed(2)} | Diff. U$  AquiVaiSpread\n`;
+    // Construir as mensagens para cada corretora e calcular o diff
+    const mensagens = [
+        { corretora: "BINANCE", preço: preçoBinance },
+        { corretora: "BYBIT", preço: preçoBybit },
+        { corretora: "GEMINI", preço: preçoGemini },
+        { corretora: "HITBTC", preço: preçoHitBtc },
+        { corretora: "HUOBI", preço: preçoHuobi },
+        { corretora: "BITSTAMP", preço: preçoBitstamp },
+        { corretora: "BITMEX", preço: preçoBitmex },
+        { corretora: "BITFINEX", preço: preçoBitfinex }
+    ];
 
-    // Construindo a mensagem para a Gemini
-    let msgGemini = "GEMINI".padEnd(10);
-    msgGemini += `BTCUSDT | PRICE: U$ ${parseFloat(preçoGemini).toFixed(2)} | Diff. U$  AquiVaiSpread\n`;
+    // Ordenar as mensagens pelo diff
+    mensagens.sort((a, b) => {
+        const diffA = a.preço - menorPreco;
+        const diffB = b.preço - menorPreco;
+        return diffA - diffB;
+    });
 
-   // Construindo a mensagem para a HitBtc
-    let msgHitBtc = "HITBTC".padEnd(10);
-    msgHitBtc += `BTCUSDT | PRICE: U$ ${parseFloat(preçoHitBtc).toFixed(2)} | Diff. U$  AquiVaiSpread\n`;
+    // Calcular o spread percentual
+    const spreadPercentual = mensagens.map(msg => {
+        const spread = ((msg.preço - menorPreco) / menorPreco) * 100;
+        return { corretora: msg.corretora, spread: spread };
+    });
 
-    let msgHuobi = "HUOBI".padEnd(10);
-    msgHuobi += `BTCUSDT | PRICE: U$ ${parseFloat(preçoHuobi).toFixed(2)} | Diff. U$  AquiVaiSpread\n`;
+    // Exibir as mensagens com os valores mais baixo e mais alto
+    mensagens.forEach(msg => {
+        const diff = msg.preço - menorPreco;
+        console.log(`${msg.corretora.padEnd(10)}BTCUSDT | PRICE: U$ ${parseFloat(msg.preço).toFixed(2)} | Diff. U$ ${diff.toFixed(2)}`);
+    });
 
-    let msgBitstamp = "BITSTAMP".padEnd(10);
-    msgBitstamp += `BTCUSDT | PRICE: U$ ${parseFloat(preçoBitstamp).toFixed(2)} | Diff. U$  AquiVaiSpread\n`;
-    
-    // Exibindo as mensagens uma abaixo da outra
-    console.log(msgBinance + msgBybit + msgGemini + msgHitBtc + msgHuobi + msgBitstamp);
-    
+    // Exibir o valor mais baixo e o mais alto com os nomes das corretoras
+    console.log(`\nValor mais baixo: U$ ${parseFloat(menorPreco).toFixed(2)} (${mensagens[0].corretora})`);
+    console.log(`Valor mais alto: U$ ${parseFloat(maiorPreco).toFixed(2)} (${mensagens[mensagens.length - 1].corretora})`);
+
+    // Exibir o spread percentual
+    console.log("\nSpread Percentual:");
+    spreadPercentual.forEach(spread => {
+        console.log(`${spread.corretora.padEnd(10)}Spread: ${spread.spread.toFixed(2)}%`);
+    });
 }
 
 setInterval(async () => {
-   // console.clear()
-    rodando()
-}, 5000)
+    console.clear(); // Limpar o console antes de exibir os novos preços
+    await rodando();
+}, 5000);
 
-rodando()
+rodando(); // Chamar a função pela primeira vez
