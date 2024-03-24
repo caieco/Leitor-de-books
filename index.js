@@ -4,15 +4,14 @@ const exchanges = require("./exchanges");
 async function rodando() {
     // Obter os preços de todas as corretoras
     const [preçoBinance, preçoBybit, preçoGemini, preçoHitBtc, preçoHuobi, preçoBitstamp, preçoBitmex, preçoBitfinex] = await Promise.all([
-        exchanges.orderbook_binance(),
-        exchanges.orderbook_bybit(),
-        exchanges.orderbook_gemini(),
-        exchanges.orderbook_hitbtc(),
-        exchanges.orderbook_huobi(),
-        
-        exchanges.orderbook_bitstamp(),
-        exchanges.orderbook_bitmex(),
-        exchanges.orderbook_bitfinex()
+        exchanges.getOrderbook('binance'),
+        exchanges.getOrderbook('bybit'),
+        exchanges.getOrderbook('gemini'),
+        exchanges.getOrderbook('hitbtc'),
+        exchanges.getOrderbook('huobi'),
+        exchanges.getOrderbook('bitstamp'),
+        exchanges.getOrderbook('bitmex'),
+        exchanges.getOrderbook('bitfinex')
     ]);
 
     // Calcular o preço mais alto e o mais baixo
